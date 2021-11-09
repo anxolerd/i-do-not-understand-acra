@@ -15,7 +15,7 @@ Steps to reproduce
 
    .. code-block:: console
 
-      machine $ docker-compose up
+      machine$ docker-compose up
       Creating network "acra-test_default" with the default driver
       Creating acra-test_acra-keymaker_server_1    ... done
       Creating acra-test_postgres_1                ... done
@@ -29,7 +29,7 @@ Steps to reproduce
 
    .. code-block:: console
 
-      machine $ docker-compose exec postgres bash
+      machine$ docker-compose exec postgres bash
       root@8fdd627a0c4c:/# psql postgresql://test42:test42@postgres:5432/test42
       psql (14.0 (Debian 14.0-1.pgdg110+1))
       Type "help" for help.
@@ -120,24 +120,24 @@ System information
 
     .. code-block:: console
 
-       machine $ docker images | grep acra
+       machine$ docker images | grep acra
        cossacklabs/acra-keymaker                                     latest            4d991ca85b0c   9 hours ago     25.2MB
        cossacklabs/acra-connector                                    latest            19ecc54ac330   9 hours ago     27.2MB
        cossacklabs/acra-server                                       latest            937044fbb355   9 hours ago     70.4MB
 
-       machine $ docker inspect 4d991ca85b0c | jq '.[0] | .Id, .RepoDigests'
+       machine$ docker inspect 4d991ca85b0c | jq '.[0] | .Id, .RepoDigests'
        "sha256:4d991ca85b0cb967522c4b78206d53c96a81a1372b005ca82b3c4f2ce44ba77c"
        [
          "cossacklabs/acra-keymaker@sha256:5817447c33d5429228ad3b6199d831ff378292cc81f392c615716b4cc1d1c995"
        ]
 
-       machine $ docker inspect 19ecc54ac330 | jq '.[0] | .Id, .RepoDigests'
+       machine$ docker inspect 19ecc54ac330 | jq '.[0] | .Id, .RepoDigests'
        "sha256:19ecc54ac330320421b1722dbd0e5c541616ff21177bc80ed01fbdae2ad2c3a7"
        [
          "cossacklabs/acra-connector@sha256:7ecce949f7d9c96b9222c4cf57e8ce23833335442428a4bceb4befe1ccf9d0bd"
        ]
 
-       machine $ docker inspect 937044fbb355 | jq '.[0] | .Id, .RepoDigests'
+       machine$ docker inspect 937044fbb355 | jq '.[0] | .Id, .RepoDigests'
        "sha256:937044fbb35529773e51fd63cf07a5ef56e7b287df6207632e0df09e9d3d7776"
        [
          "cossacklabs/acra-server@sha256:48c09375da156beabd141744271ba9e8e137dd344a5c843de3c83f5d41855284"
@@ -147,9 +147,9 @@ System information
 
     .. code-block:: console
 
-       machine $ docker --version
+       machine$ docker --version
        Docker version 20.10.9, build c2ea9bc90b
 
-       machine $ docker-compose --version
+       machine$ docker-compose --version
        docker-compose version 1.29.2, build unknown
 
