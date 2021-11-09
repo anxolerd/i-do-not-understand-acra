@@ -1,0 +1,8 @@
+schemas:
+  - table: "foo"
+    columns:
+      - id
+      - data
+      - comment
+    encrypted:
+      - column: "data"

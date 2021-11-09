@@ -1,0 +1,32 @@
+version: 0.90.0
+
+# Log everything to stderr
+v: true
+d: true
+
+# Host to db
+db_host: postgres
+
+# Port to db
+db_port: 5432
+
+# Path to Encryptor configuration file
+encryptor_config_file: /configs/acra-encryptor.yaml
+
+# Host for AcraServer
+incoming_connection_host: 0.0.0.0
+
+# Port for AcraServer
+incoming_connection_port: 9393
+
+# Connection string like tcp://x.x.x.x:yyyy or unix:///path/to/socket
+incoming_connection_string: tcp://0.0.0.0:9393/
+
+# Folder from which will be loaded keys
+keys_dir: /keys
+
+# Handle Postgresql connections (default true)
+postgresql_enable: true
+
+# Set authentication mode that will be used in TLS connection with database. Overrides the "tls_auth" setting.
+tls_database_auth: -1
