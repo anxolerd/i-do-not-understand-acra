@@ -1,15 +1,15 @@
-========================
-I do not understand acra
-========================
+================================
+01. Checking encryption via psql
+================================
 
 Description
 ===========
 
-While connecting to acra via acra-connector in transparent mode I can encrypt data, but cannot decrypt it.
+This example shows how to set up acra-server in transparent mode and use
+acra-connector to work with the database.
 
-
-Steps to reproduce
-==================
+Steps to run
+============
 
 #. Spin-up the project for the first time
 
@@ -59,6 +59,22 @@ Steps to reproduce
    .. code-block:: console
 
       test42=# select * from foo;
+       id |     data     | comment
+       ----+--------------+---------
+         1 | \x68656c6c6f | ?
+         (1 row)
+
+#. Reconnect without acra-connector and check if data is actually encrypted
+
+   .. code-block:: console
+
+      root@8fdd627a0c4c:/# psql postgresql://test42:test42@postgres:5432/test42
+                                                           ^^^^^^^^
+                                                           Connecting directly to database without connector
+      psql (14.0 (Debian 14.0-1.pgdg110+1))
+      Type "help" for help.
+
+      test42=# select * from foo;
        id |
                                                                             data
                                                                                                                                                  |
@@ -75,43 +91,38 @@ Steps to reproduce
 
       test42=#
 
-#. Observe the logs of acra-server in the first terminal:
-
-    .. code-block::
-
-       time="2021-11-09T20:02:40Z" level=debug msg="New query" client_id=signservice proxy=client session_id=1 sql="select * from foo"
-       time="2021-11-09T20:02:40Z" level=debug msg="Read data length" client_id=signservice proxy=server session_id=1
-       time="2021-11-09T20:02:40Z" level=debug msg="Read data" client_id=signservice proxy=server session_id=1
-       time="2021-11-09T20:02:40Z" level=debug msg="Read packet" client_id=signservice proxy=server session_id=1
-       time="2021-11-09T20:02:40Z" level=debug msg="Read data length" client_id=signservice proxy=server session_id=1
-       time="2021-11-09T20:02:40Z" level=debug msg="Read data" client_id=signservice proxy=server session_id=1
-       time="2021-11-09T20:02:40Z" level=debug msg="Matched data row packet" client_id=signservice proxy=server session_id=1
-       time="2021-11-09T20:02:40Z" level=debug msg="Process columns data" client_id=signservice proxy=server session_id=1
-       time="2021-11-09T20:02:40Z" level=debug msg="OnColumn: Try to decrypt SerializedContainer"
-       time="2021-11-09T20:02:40Z" level=debug msg="OnColumn: Try to decrypt AcraBlock"
-       time="2021-11-09T20:02:40Z" level=debug msg="OnColumn: Try to decrypt SerializedContainer"
-       time="2021-11-09T20:02:40Z" level=debug msg="OnColumn: Try to decrypt AcraBlock"
-       time="2021-11-09T20:02:40Z" level=debug msg="OnColumn: Try to decrypt SerializedContainer"
-       time="2021-11-09T20:02:40Z" level=debug msg="Generate poison key pair"
-       time="2021-11-09T20:02:40Z" level=warning msg="Can't read private key for matched client_id/zone_id" client_id=signservice error="Failed to unprotect data" session_id=1 zone_id=""
-       time="2021-11-09T20:02:40Z" level=warning msg="Can't decrypt SerializedContainer: can't unwrap symmetric key" client_id=signservice code=581 error="Failed to unprotect data" session_id=1
-       time="2021-11-09T20:02:40Z" level=debug msg="OnColumn: Try to decrypt SerializedContainer"
-       time="2021-11-09T20:02:40Z" level=debug msg="Load key from fs: .poison_key/poison_key"
-       time="2021-11-09T20:02:40Z" level=warning msg="Can't read private key for matched client_id/zone_id" client_id=signservice error="Failed to unprotect data" session_id=1 zone_id=""
-       time="2021-11-09T20:02:40Z" level=warning msg="Can't decrypt SerializedContainer: can't unwrap symmetric key" client_id=signservice code=581 error="Failed to unprotect data" session_id=1
-       time="2021-11-09T20:02:40Z" level=debug msg="OnColumn: Try to decrypt SerializedContainer"
-       time="2021-11-09T20:02:40Z" level=debug msg="OnColumn: Try to decrypt AcraBlock"
-       time="2021-11-09T20:02:40Z" level=debug msg="OnColumn: Try to decrypt SerializedContainer"
-       time="2021-11-09T20:02:40Z" level=debug msg="OnColumn: Try to decrypt AcraBlock"
-
-
-Expected result
+Important notes
 ===============
 
-Data is returned decrypted when connecting through acra-connector, no warnings in logs.
+As `@Lagovas <https://github.com/Lagovas>`_ mentioned in `pulls/#1
+<https://github.com/anxolerd/i-do-not-understand-acra/pulls/#1>`_, it is
+important to use the same ``ACRA_MASTER_KEY`` for acra-server and acra-writer,
+otherwise acra will not be able to access the private decryption keys and
+therefore you will not be able to decrypt data transparently
+
+If you see the following in the ``acra-server`` logs when trying to select
+encrypted data, specifically you see the lines ``Can't read private key for
+matched client_id/zone_id`` alongside with ``Can't decrypt SerializedContainer:
+can't unwrap symmetric key`` it means you probably used different
+``ACRA_MASTER_KEY`` for actra-server and acra-writer as I originally did in
+`32ad5024
+<https://github.com/anxolerd/i-do-not-understand-acra/commit/32ad5024f0f7af918f83b1d234e01a4c2b901d03#diff-e45e45baeda1c1e73482975a664062aa56f20c03dd9d64a827aba57775bed0d3>`_.
+
+.. code-block::
+
+   time="2021-11-09T20:02:40Z" level=warning msg="Can't read private key for matched client_id/zone_id" client_id=signservice error="Failed to unprotect data" session_id=1 zone_id=""
+   time="2021-11-09T20:02:40Z" level=warning msg="Can't decrypt SerializedContainer: can't unwrap symmetric key" client_id=signservice code=581 error="Failed to unprotect data" session_id=1
+   time="2021-11-09T20:02:40Z" level=debug msg="OnColumn: Try to decrypt SerializedContainer"
+   time="2021-11-09T20:02:40Z" level=debug msg="Load key from fs: .poison_key/poison_key"
+   time="2021-11-09T20:02:40Z" level=warning msg="Can't read private key for matched client_id/zone_id" client_id=signservice error="Failed to unprotect data" session_id=1 zone_id=""
+   time="2021-11-09T20:02:40Z" level=warning msg="Can't decrypt SerializedContainer: can't unwrap symmetric key" client_id=signservice code=581 error="Failed to unprotect data" session_id=1
+
+
 
 System information
 ==================
+
+This example was created and run in the following environment:
 
 :OS:
     Gentoo Linux
